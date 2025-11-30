@@ -9,7 +9,7 @@ message Empty {
 }
 
 message SerRequest{
-  string host = 1;
+  string ip = 1;
   string port = 2;
 }
 
@@ -27,7 +27,7 @@ message Response{
 
 message CliInfo{
   int32 cli_id = 1;
-  string host = 2;
+  string ip = 2;
   string port =3;
   bool errno = 4;
   string errmes = 5;

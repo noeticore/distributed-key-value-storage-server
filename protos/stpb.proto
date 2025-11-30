@@ -13,6 +13,7 @@ service storagementService {
     rpc maDeldata(StRequest) returns(StEmpty);
     rpc abort(StRequest) returns(StEmpty);
     rpc commit(StRequest) returns(StEmpty);
+    rpc live(StEmpty) returns(StEmpty);
 }
 
 message StRequest {

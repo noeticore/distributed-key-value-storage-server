@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nstpb.proto\x12\x04stpb\"8\n\tStRequest\x12\x0e\n\x06\x63li_id\x18\x01 \x01(\x05\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06\x64\x65lete\x18\x03 \x01(\x08\"2\n\x04StKV\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x0e\n\x06\x63li_id\x18\x03 \x01(\x05\"7\n\x07StEmpty\x12\r\n\x05\x65mpty\x18\x01 \x01(\t\x12\r\n\x05\x65rrno\x18\x03 \x01(\x08\x12\x0e\n\x06\x65rrmes\x18\x04 \x01(\t\":\n\nStResponse\x12\r\n\x05value\x18\x01 \x01(\t\x12\r\n\x05\x65rrno\x18\x03 \x01(\x08\x12\x0e\n\x06\x65rrmes\x18\x04 \x01(\t2\xeb\x02\n\x12storagementService\x12,\n\x07getdata\x12\x0f.stpb.StRequest\x1a\x10.stpb.StResponse\x12$\n\x07putdata\x12\n.stpb.StKV\x1a\r.stpb.StEmpty\x12)\n\x07\x64\x65ldata\x12\x0f.stpb.StRequest\x1a\r.stpb.StEmpty\x12.\n\tmaGetdata\x12\x0f.stpb.StRequest\x1a\x10.stpb.StResponse\x12&\n\tmaPutdata\x12\n.stpb.StKV\x1a\r.stpb.StEmpty\x12+\n\tmaDeldata\x12\x0f.stpb.StRequest\x1a\r.stpb.StEmpty\x12\'\n\x05\x61\x62ort\x12\x0f.stpb.StRequest\x1a\r.stpb.StEmpty\x12(\n\x06\x63ommit\x12\x0f.stpb.StRequest\x1a\r.stpb.StEmptyB\x11Z\x0f../storageprotob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nstpb.proto\x12\x04stpb\"8\n\tStRequest\x12\x0e\n\x06\x63li_id\x18\x01 \x01(\x05\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06\x64\x65lete\x18\x03 \x01(\x08\"2\n\x04StKV\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x0e\n\x06\x63li_id\x18\x03 \x01(\x05\"7\n\x07StEmpty\x12\r\n\x05\x65mpty\x18\x01 \x01(\t\x12\r\n\x05\x65rrno\x18\x03 \x01(\x08\x12\x0e\n\x06\x65rrmes\x18\x04 \x01(\t\":\n\nStResponse\x12\r\n\x05value\x18\x01 \x01(\t\x12\r\n\x05\x65rrno\x18\x03 \x01(\x08\x12\x0e\n\x06\x65rrmes\x18\x04 \x01(\t2\x91\x03\n\x12storagementService\x12,\n\x07getdata\x12\x0f.stpb.StRequest\x1a\x10.stpb.StResponse\x12$\n\x07putdata\x12\n.stpb.StKV\x1a\r.stpb.StEmpty\x12)\n\x07\x64\x65ldata\x12\x0f.stpb.StRequest\x1a\r.stpb.StEmpty\x12.\n\tmaGetdata\x12\x0f.stpb.StRequest\x1a\x10.stpb.StResponse\x12&\n\tmaPutdata\x12\n.stpb.StKV\x1a\r.stpb.StEmpty\x12+\n\tmaDeldata\x12\x0f.stpb.StRequest\x1a\r.stpb.StEmpty\x12\'\n\x05\x61\x62ort\x12\x0f.stpb.StRequest\x1a\r.stpb.StEmpty\x12(\n\x06\x63ommit\x12\x0f.stpb.StRequest\x1a\r.stpb.StEmpty\x12$\n\x04live\x12\r.stpb.StEmpty\x1a\r.stpb.StEmptyB\x11Z\x0f../storageprotob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -41,5 +41,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_STRESPONSE']._serialized_start=187
   _globals['_STRESPONSE']._serialized_end=245
   _globals['_STORAGEMENTSERVICE']._serialized_start=248
-  _globals['_STORAGEMENTSERVICE']._serialized_end=611
+  _globals['_STORAGEMENTSERVICE']._serialized_end=649
 # @@protoc_insertion_point(module_scope)
