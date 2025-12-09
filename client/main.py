@@ -38,7 +38,7 @@ def reconnect(client_id: int):
 
 def main():
     # connect to management server and register as a client
-    manage_target = params.MANAGER_IP
+    manage_target = params.MANAGER_IP + params.MANAGER_PORT
     manage_ch = grpc.insecure_channel(manage_target)
     mac = mapb_grpc.manageServiceStub(manage_ch)
     try:
@@ -53,11 +53,13 @@ def main():
         print(getattr(info, 'errmes', getattr(info, 'Errmes', '连接失败')))
         return
 
-    client_id = getattr(info, 'cliId', getattr(info, 'CliId', None))
-    host = getattr(info, 'host', getattr(info, 'Host', ''))
-    port = getattr(info, 'port', getattr(info, 'Port', ''))
+    client_id = info.cli_id
+    print(f"已连接至管理服务器，客户端ID为 {client_id}")
+    ip = info.ip
+    port = info.port
 
-    storage_target = host + port
+    storage_target = ip + port
+    print(f"连接至存储服务器 {storage_target}")
     storage_ch = grpc.insecure_channel(storage_target)
     st = stpb_grpc.storagementServiceStub(storage_ch)
 
@@ -130,10 +132,10 @@ def main():
                     continue
                 key = args[1]
                 resp = call_with_reconnect(lambda r: st.getdata(r), stpb.StRequest(cli_id=client_id, key=key))
-                if not getattr(resp, 'errno', getattr(resp, 'Errno', False)):
-                    print(getattr(resp, 'errmes', getattr(resp, 'Errmes', '获取失败')))
+                if not resp.errno:
+                    print(resp.errmes)
                 else:
-                    print(getattr(resp, 'value', getattr(resp, 'Value', '')))
+                    print(resp.value)
 
             elif cmd == 'PUT':
                 if len(args) != 3:
@@ -141,8 +143,8 @@ def main():
                     continue
                 key, value = args[1], args[2]
                 resp = call_with_reconnect(lambda r: st.putdata(r), stpb.StKV(cli_id=client_id, key=key, value=value))
-                if not getattr(resp, 'errno', getattr(resp, 'Errno', False)):
-                    print(getattr(resp, 'errmes', getattr(resp, 'Errmes', '提交失败')))
+                if not resp.errno:
+                    print(resp.errmes)
                 else:
                     print('上传成功')
 
@@ -152,8 +154,8 @@ def main():
                     continue
                 key = args[1]
                 resp = call_with_reconnect(lambda r: st.deldata(r), stpb.StRequest(cli_id=client_id, key=key))
-                if not getattr(resp, 'errno', getattr(resp, 'Errno', False)):
-                    print(getattr(resp, 'errmes', getattr(resp, 'Errmes', '删除失败')))
+                if not resp.errno:
+                    print(resp.errmes)
                 else:
                     print('删除成功')
 
@@ -164,10 +166,10 @@ def main():
                     mac2 = mapb_grpc.manageServiceStub(manage_ch2)
                     resp = mac2.changeServerRandom(mapb.CliId(cli_id=client_id))
                     manage_ch2.close()
-                    if not getattr(resp, 'errno', getattr(resp, 'Errno', False)):
-                        print(getattr(resp, 'errmes', getattr(resp, 'Errmes', '切换失败')))
+                    if not resp.errno:
+                        print(resp.errmes)
                     else:
-                        api = getattr(resp, 'api', getattr(resp, 'Api', None))
+                        api = resp.api
                         storage_ch = grpc.insecure_channel(api)
                         st = stpb_grpc.storagementServiceStub(storage_ch)
                         print('切换成功')
@@ -177,8 +179,8 @@ def main():
                     mac2 = mapb_grpc.manageServiceStub(manage_ch2)
                     resp = mac2.changeServer(mapb.CliChange(cli_id=client_id, api=api))
                     manage_ch2.close()
-                    if not getattr(resp, 'errno', getattr(resp, 'Errno', False)):
-                        print(getattr(resp, 'errmes', getattr(resp, 'Errmes', '切换失败')))
+                    if not resp.errno:
+                        print(resp.errmes)
                     else:
                         storage_ch = grpc.insecure_channel(api)
                         st = stpb_grpc.storagementServiceStub(storage_ch)

@@ -274,7 +274,8 @@ class ManageService(mapb_grpc.manageServiceServicer):
         self.live_thread.join()
 
     def check_all_storage_live(self):
-        for sid, ser in self.servermap.items():
+        snapshot = self.servermap.copy()
+        for sid, ser in snapshot.items():
                 ip, port = ser.ip, ser.port
                 target = ip + port
                 try:

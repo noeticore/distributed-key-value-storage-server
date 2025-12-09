@@ -49,7 +49,8 @@ class Cache:
                     maxt = t
                     maxk = k
             if maxk is not None:
-                self.del_key(maxk)
+                self.timemap.pop(maxk, None)
+                self.m.pop(maxk, None)
             self.timemap[key] = 0
             self.m[key] = value
 
@@ -88,21 +89,18 @@ class RWLock:
 
     def try_acquire_read(self) -> bool:
         # try to obtain read lock without blocking writers
-        acquired = self._wlock.acquire(blocking=False)
-        if acquired:
-            # we acquired writer lock, release it and increment reader count
-            self._wlock.release()
-            with self._rlock:
+        with self._rlock:
+            if self._readers > 0:
+                # already have readers, can acquire
                 self._readers += 1
-                if self._readers == 1:
-                    # acquire wlock to indicate readers present
-                    self._wlock.acquire()
-                    # release immediately; readers hold the wlock until last reader
-                    self._wlock.release()
-            return True
-        else:
-            # writer active; cannot acquire read
-            return False
+                return True
+            acquired = self._wlock.acquire(blocking=False)
+            if acquired:
+                self._readers += 1
+                return True
+            else:
+                # writer active; cannot acquire read
+                return False
 
     def acquire_write(self):
         self._wlock.acquire()
@@ -167,7 +165,7 @@ class StoreService(stpb_grpc.storagementServiceServicer):
                 raise
             if not resp.errno:
                 self.logger.info(f"无法从其他服务器取得键值{key} {resp.errmes},告知客户端{cli_id}")
-                return stpb.StResponse(errno=False, errmes="无法获取键值")
+                return stpb.StResponse(errno=False, errmes="未找到键值")
             self.logger.info(f"成功从其他服务器请求键值{key}")
             self.logger.info(f"缓存记录键值{key}")
             self.cache.add(key, resp.value)
@@ -188,7 +186,7 @@ class StoreService(stpb_grpc.storagementServiceServicer):
             return stpb.StResponse(value=resp.value, errno=True)
 
     def maGetdata(self, request, context):
-        key = self._get_field(request, 'key', 'Key', default="")
+        key = request.key
         self.logger.info(f"管理服务器 请求键值{key}")
         value, ok = self.cache.get(key)
         if ok:
@@ -281,7 +279,7 @@ class StoreService(stpb_grpc.storagementServiceServicer):
         return stpb.StEmpty(errno=True)
 
     def putdata(self, request, context):
-        cli_id = self._get_field(request, 'cli_id', 'cliId', default=0)
+        cli_id = request.cli_id
         key = request.key
         value = request.value
         self.logger.info(f"客户端{cli_id} 正在申请提交键值{key}")
@@ -298,7 +296,7 @@ class StoreService(stpb_grpc.storagementServiceServicer):
         return stpb.StEmpty(errno=True)
 
     def deldata(self, request, context):
-        cli_id = self._get_field(request, 'cli_id', 'cliId', default=0)
+        cli_id = request.cli_id
         key = request.key
         self.logger.info(f"客户端{cli_id} 正在申请删除键值{key}")
         try:
@@ -374,17 +372,13 @@ class StoreService(stpb_grpc.storagementServiceServicer):
             self.logger.error(f"发生错误{e},注销失败")
 
 
-def create_store_service(server_id: int, datapath: str, logger: logging.Logger, cachenum: int):
-    return StoreService(server_id, datapath, logger, cachenum)
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--ip", default="localhost")
     parser.add_argument("--port", default=str(random.randint(20000, 65535)))
     parser.add_argument("--clear", action="store_true", help="结束是否清除数据")
     parser.add_argument("--cache", type=int, default=5)
-    parser.add_argument("--savepath", type=str, default="storege/")
+    parser.add_argument("--savepath", type=str, default="storage/")
     args = parser.parse_args()
 
     ip = args.ip
@@ -421,6 +415,9 @@ def main():
         logger.info("接收到中断信号, 正在注销...")
         if args.clear:
             try:
+                for handler in logger.handlers[:]:
+                    handler.close()            # 关闭 handler，释放文件句柄
+                    logger.removeHandler(handler)
                 import shutil
                 shutil.rmtree(datapath)
             except Exception:
