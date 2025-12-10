@@ -80,6 +80,10 @@ python -m client.main
   
 详细作用可在客户端输入`help`查看
 
+## ⚙️4. 项目测试
+
+所有的测试文件均在`tests/` 文件加内部，在项目根目录输入`pytest -q`，即可进行所有单元测试
+
 ---
 
 ## 📁 项目结构
@@ -101,8 +105,15 @@ project/
 │   └─ stpb_pb2_grpc.py
 ├─ params/
 │   └─ params.py
-├─ pyproject.toml
-└─ README.md
+├─tests/
+│   ├─ conftest.py
+│   ├─ test_manager.py
+│   ├─ test_storege.py
+│   └─ utils.py
+├─ pyproject.tomlni
+├─ pytest.i
+├─ README.md
+└─ uv.lock
 ```
 
 ---

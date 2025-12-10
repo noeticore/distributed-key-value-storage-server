@@ -39,13 +39,13 @@ def test_cache_basic_operations():
     assert not ok
 
 def test_heartbeat_handling(storage_server):
-    storage_stub, _ = storage_server
+    storage_stub, _, _, _ = storage_server
     # 发送心跳
     response = storage_stub.live(stpb.StEmpty())
     assert response.errno
 
 def test_base_operations(storage_server):
-    storage_stub, _ = storage_server
+    storage_stub, _, _, _ = storage_server
     # 测试基本的 PUT, GET, DEL 操作
     key = "testkey"
     value = "testvalue"

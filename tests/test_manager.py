@@ -1,6 +1,7 @@
 ﻿import logging
 import grpc
 
+from tests.utils import _start_storage
 from concurrent import futures
 from protos import mapb_pb2 as mapb
 from protos import mapb_pb2_grpc as mapb_grpc
@@ -9,17 +10,7 @@ from protos import stpb_pb2_grpc as stpb_grpc
 from server.main import ManageService
 from storage.main import StoreService
 
-def _start_storage(manager_stub):
-    fakelogger = logging.getLogger("storage")
-    fakelogger.handlers.clear()   # 移除所有 handler    
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
-    port = server.add_insecure_port("localhost:0")
-    info = manager_stub.online(mapb.SerRequest(ip="localhost", port=str(port)))
-    sid = info.server_id
-    storage_service = StoreService(server_id=sid, datapath="tests/storage/", logger=fakelogger, cache_num=5, manager_addr=f"localhost:{port}")
-    stpb_grpc.add_storagementServiceServicer_to_server(storage_service, server)
-    
-    server.start()
+
     
 
 def test_node_register_and_unregister():
@@ -42,3 +33,24 @@ def test_check_all_storage_live(manager_server):
 
     manage_service.check_all_storage_live()
     assert True
+
+def test_change_store_server(manager_server, storage_server):
+    manager_stub, manage_service, _ = manager_server
+    _, _, _, api0 = storage_server
+    clinent_info = manager_stub.connect(mapb.Empty())
+    assert clinent_info.ip + clinent_info.port == api0
+
+    client_id = clinent_info.cli_id
+    
+    # 启动一个假的 storage server 并注册
+    _, api1 = _start_storage(manager_stub)
+    _, api2 = _start_storage(manager_stub)
+
+    response = manager_stub.changeServer(mapb.CliChange(cli_id=client_id, api = api1))
+    assert response.errno
+    response = manager_stub.changeServer(mapb.CliChange(cli_id=client_id, api = api2))
+    assert response.errno
+
+    resp = manager_stub.changeServerRandom(mapb.CliId(cli_id=client_id))
+    assert resp.errno
+    assert resp.api in [api0, api1, api2]

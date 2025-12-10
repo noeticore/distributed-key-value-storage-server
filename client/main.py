@@ -49,12 +49,12 @@ def main():
     finally:
         manage_ch.close()
 
-    if not getattr(info, 'errno', getattr(info, 'Errno', False)):
-        print(getattr(info, 'errmes', getattr(info, 'Errmes', '连接失败')))
+    if not info.errno:
+        print(info.errmes)
         return
 
     client_id = info.cli_id
-    print(f"已连接至管理服务器，客户端ID为 {client_id}")
+    print(f"已连接至管理服务器, 客户端ID为 {client_id}")
     ip = info.ip
     port = info.port
 
