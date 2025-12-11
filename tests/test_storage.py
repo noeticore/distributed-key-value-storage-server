@@ -3,6 +3,7 @@ from protos import mapb_pb2_grpc as mapb_grpc
 from protos import stpb_pb2 as stpb
 from protos import stpb_pb2_grpc as stpb_grpc
 from storage.main import Cache
+from tests.utils import _start_storage
 
 def test_cache_basic_operations():
     c = Cache(maxnum=3)
@@ -66,3 +67,20 @@ def test_base_operations(storage_server):
     # GET after DEL
     get_resp_after_del = storage_stub.getdata(stpb.StRequest(cli_id=0, key=key))
     assert not get_resp_after_del.errno and get_resp_after_del.errmes == "未找到键值"
+
+def test_get_predata(manager_server, storage_server):
+    manager_stub, _, manager_api = manager_server
+    storage_stub, _, _, _ = storage_server
+    key = "testkey"
+    value = "testvalue"
+
+    # PUT
+    put_resp = storage_stub.putdata(stpb.StKV(cli_id=0, key=key, value=value))
+    assert put_resp.errno
+
+    #get without data from other nodes
+    new_node, _ = _start_storage(manager_stub, manager_api)
+    resp = new_node.getdata(stpb.StRequest(cli_id=0, key=key), None)
+    assert resp.errno
+    assert resp.value == "testvalue"
+    

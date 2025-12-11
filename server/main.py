@@ -37,6 +37,17 @@ class ManageService(mapb_grpc.manageServiceServicer):
         self.live_thread = threading.Thread(target=self._live_loop, daemon=True)
         self.live_thread.start()
 
+    @staticmethod
+    def verify_node(func):
+        def wrapper(self, *args, **kwargs):
+            req = args[0]
+            if req.server_id not in self.servermap:
+                errmes = "节点未注册, 无权操作!"
+                self.logger.info("非法节点试图执行敏感操作, 已阻拦")
+                return mapb.Response(errno=False, errmes=errmes)
+            return func(self, *args, **kwargs)
+        return wrapper
+    
     def _rand_id(self) -> int:
         # returns a positive 32-bit int
         return random.randint(1, 2**31-1)
@@ -109,6 +120,7 @@ class ManageService(mapb_grpc.manageServiceServicer):
             self.logger.info(f"存储服务器 {ip}{port} 注消")
         return mapb.Empty(errno=True)
 
+    @verify_node
     def Get(self, request: mapb.Request, context) -> mapb.Response:
         ser_id = request.server_id
         key = request.key
@@ -152,6 +164,7 @@ class ManageService(mapb_grpc.manageServiceServicer):
         self.logger.info(f"键值{key} 未能达成一致")
         return mapb.Response(errno=False, errmes=f"其他服务器对键值{key} 无法达成一致")
 
+    @verify_node
     def Put(self, request: mapb.KV, context) -> mapb.Response:
         self.mu.acquire()
         try:
@@ -205,6 +218,7 @@ class ManageService(mapb_grpc.manageServiceServicer):
         finally:
             self.mu.release()
 
+    @verify_node
     def Del(self, request: mapb.Request, context) -> mapb.Response:
         self.mu.acquire()
         try:
